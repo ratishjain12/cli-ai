@@ -1,0 +1,22 @@
+{
+  "name": "commandline-ai",
+  "version": "1.0.6",
+  "description": "Prompt with AI in your terminal",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "commandline-ai": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "ratish jain",
+  "license": "ISC",
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "groq-sdk": "^0.4.0",
+    "openai": "^4.47.1"
+  },
+  "devDependencies": {}
+}
