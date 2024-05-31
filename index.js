@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import Groq from "groq-sdk";
 
 let groqClient, openAIClient;
-
+let history = [];
 async function getCompletion(prompt, apiKey, AiService) {
   if (!groqClient && AiService === "groq") {
     groqClient = new Groq({
@@ -19,12 +19,20 @@ async function getCompletion(prompt, apiKey, AiService) {
 
   try {
     if (groqClient) {
+      let msgObj = [];
+      if (history.length > 0) {
+        msgObj = history.map((item) => {
+          return { role: "system", content: item };
+        });
+      }
+
       const chatCompletion = await groqClient.chat.completions.create({
         messages: [
           {
             role: "user",
             content: prompt,
           },
+          ...msgObj,
         ],
         model: "llama3-8b-8192",
       });
@@ -33,12 +41,19 @@ async function getCompletion(prompt, apiKey, AiService) {
     }
 
     if (openAIClient) {
+      let msgObj = [];
+      if (history.length > 0) {
+        msgObj = history.map((item) => {
+          return { role: "system", content: item };
+        });
+      }
       const chatCompletion = await openAIClient.chat.completions.create({
         messages: [
           {
             role: "system",
             content: prompt,
           },
+          ...msgObj,
         ],
         model: "gpt-3.5-turbo-0125",
         response_format: { type: "json_object" },
@@ -81,6 +96,8 @@ async function main() {
 
     if (ans) {
       console.log();
+      history.push(prompt);
+      history.push(ans);
       console.log(ans);
     }
     s.stop("generated.");
