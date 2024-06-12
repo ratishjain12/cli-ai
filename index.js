@@ -3,9 +3,31 @@
 import { intro, outro, text, spinner, confirm, select } from "@clack/prompts";
 import OpenAI from "openai";
 import Groq from "groq-sdk";
+import axios from "axios";
 
 let groqClient, openAIClient;
 let history = [];
+
+const searchStackOverflow = async (query) => {
+  try {
+    const response = await axios.get(
+      "https://api.stackexchange.com/2.3/search/advanced",
+      {
+        params: {
+          order: "desc",
+          sort: "relevance",
+          q: query,
+          site: "stackoverflow",
+        },
+      }
+    );
+
+    return response?.data?.items.map((item) => item.link);
+  } catch (e) {
+    return [];
+  }
+};
+
 async function getCompletion(prompt, apiKey, AiService) {
   if (!groqClient && AiService === "groq") {
     groqClient = new Groq({
@@ -93,12 +115,22 @@ async function main() {
     s.start("loading...");
 
     const ans = await getCompletion(prompt, apiKey, AiService);
+    let links;
+    if (prompt.includes("-stackoverflow") || prompt.includes("-s")) {
+      let modified = prompt.replace("-stackoverflow", "");
+      modified.replace("-s", "");
+      links = await searchStackOverflow(modified);
+    }
 
     if (ans) {
       console.log();
       history.push(prompt);
       history.push(ans);
       console.log(ans);
+      if (links) {
+        console.log("Links from stackoverflow: ");
+        links?.slice(0, 5).forEach((link) => console.log(link));
+      }
     }
     s.stop("generated.");
     const shouldContinue = await confirm({
